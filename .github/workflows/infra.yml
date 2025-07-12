@@ -64,13 +64,14 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init tf-modules/services/fargate
 
       - name: Select/Create Terraform Workspace
-        run: terraform workspace select -or-create "$ENVIRONMENT"
+        run: terraform -chdir=tf-modules/services/fargate workspace select -or-create "$ENVIRONMENT"
 
       - name: Terraform Action
         run: |
+          cd tf-modules/services/fargate
           if [[ "$TF_ACTION" == "plan" ]]; then
             terraform plan -var="environment=$ENVIRONMENT"
           elif [[ "$TF_ACTION" == "apply" ]]; then
