@@ -47,10 +47,10 @@ jobs:
         with:
           repository: BheemrajRH/Operationautomation
           token: ${{ secrets.GH_PAT }}
-          path: tf-modules/services/fargate
+          path: tf-source
 
       - name: List files in source repo
-        run: ls -la tf-modules/services/fargate
+        run: ls -la tf-source/tf-modules/services/fargate
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -64,19 +64,19 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=tf-modules/services/fargate init
+        run: terraform -chdir=tf-source/tf-modules/services/fargate init
 
       - name: Select/Create Terraform Workspace
-        run: terraform -chdir=tf-modules/services/fargate workspace select -or-create "$ENVIRONMENT"
+        run: terraform -chdir=tf-source/tf-modules/services/fargate workspace select -or-create "$ENVIRONMENT"
 
       - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform -chdir=tf-modules/services/fargate plan -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-source/tf-modules/services/fargate plan -var="environment=$ENVIRONMENT"
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform -chdir=tf-modules/services/fargate apply -auto-approve -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve -var="environment=$ENVIRONMENT"
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform -chdir=tf-modules/services/fargate destroy -auto-approve -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-source/tf-modules/services/fargate destroy -auto-approve -var="environment=$ENVIRONMENT"
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
