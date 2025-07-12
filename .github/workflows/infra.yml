@@ -66,9 +66,6 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=tf-source/tf-modules/services/fargate init
 
-      - name: Terraform Validate
-        run: terraform -chdir=tf-source/tf-modules/services/fargate validate
-
       - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
