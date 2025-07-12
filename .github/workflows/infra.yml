@@ -51,8 +51,8 @@ jobs:
         with:
           repository: BheemrajRH/Operationautomation
           ref: ${{ inputs.source_branch }}
-          token: ${{ secrets.GH_PAT }}
           path: tf-source/tf-modules/services/fargate
+          token: ${{ secrets.GH_PAT }}
 
       - name: List files in source repo
         run: ls -la tf-source/tf-modules/services/fargate
