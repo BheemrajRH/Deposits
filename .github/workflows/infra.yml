@@ -64,20 +64,19 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform init tf-modules/services/fargate
+        run: terraform -chdir=tf-modules/services/fargate init
 
       - name: Select/Create Terraform Workspace
         run: terraform -chdir=tf-modules/services/fargate workspace select -or-create "$ENVIRONMENT"
 
       - name: Terraform Action
         run: |
-          cd tf-modules/services/fargate
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform plan -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-modules/services/fargate plan -var="environment=$ENVIRONMENT"
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform apply -auto-approve -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-modules/services/fargate apply -auto-approve -var="environment=$ENVIRONMENT"
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform destroy -auto-approve -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-modules/services/fargate destroy -auto-approve -var="environment=$ENVIRONMENT"
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
