@@ -1,0 +1,85 @@
+name: Terraform CI/CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-east-1'
+      terraform_action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  AWS_REGION: ${{ inputs.aws_region }}
+  ENVIRONMENT: ${{ inputs.environment }}
+  TF_ACTION: ${{ inputs.terraform_action }}
+
+jobs:
+  terraform:
+    name: Run Terraform ${{ env.TF_ACTION }} on ${{ env.ENVIRONMENT }}
+    runs-on: ubuntu-latest
+    environment: ${{ env.ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout infrastructure repo
+        uses: actions/checkout@v4
+
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          repository: BheemrajRH/Operationautomation
+          token: ${{ secrets.GH_PAT }}
+          path: tf-modules/services/fargate
+
+      - name: List files in source repo
+        run: ls -la tf-modules/services/fargate
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select/Create Terraform Workspace
+        run: |
+          terraform workspace select $ENVIRONMENT || terraform workspace new $ENVIRONMENT
+
+      - name: Terraform ${{ env.TF_ACTION | title }}
+        run: |
+          if [[ "$TF_ACTION" == "plan" ]]; then
+            terraform plan -var="environment=$ENVIRONMENT"
+          elif [[ "$TF_ACTION" == "apply" ]]; then
+            terraform apply -auto-approve -var="environment=$ENVIRONMENT"
+          elif [[ "$TF_ACTION" == "destroy" ]]; then
+            terraform destroy -auto-approve -var="environment=$ENVIRONMENT"
+          else
+            echo "Unsupported action: $TF_ACTION"
+            exit 1
+          fi
