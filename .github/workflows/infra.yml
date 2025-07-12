@@ -66,14 +66,17 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=tf-source/tf-modules/services/fargate init
 
+      - name: Terraform Validate
+        run: terraform -chdir=tf-source/tf-modules/services/fargate validate
+
       - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate plan -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-source/tf-modules/services/fargate plan -var-file="env/${ENVIRONMENT}.tfvars"
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve -var-file="env/${ENVIRONMENT}.tfvars"
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate destroy -auto-approve -var="environment=$ENVIRONMENT"
+            terraform -chdir=tf-source/tf-modules/services/fargate destroy -auto-approve -var-file="env/${ENVIRONMENT}.tfvars"
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
