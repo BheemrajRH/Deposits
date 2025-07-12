@@ -72,7 +72,7 @@ jobs:
       - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate plan -var-file="env/${ENVIRONMENT}.tfvars"
+            terraform -chdir=tf-source/tf-modules/services/fargate plan
           elif [[ "$TF_ACTION" == "apply" ]]; then
             terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve -var-file="env/${ENVIRONMENT}.tfvars"
           elif [[ "$TF_ACTION" == "destroy" ]]; then
