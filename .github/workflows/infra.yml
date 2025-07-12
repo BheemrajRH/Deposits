@@ -26,19 +26,18 @@ on:
           - apply
           - destroy
 
-env:
-  AWS_REGION: ${{ inputs.aws_region }}
-  ENVIRONMENT: ${{ inputs.environment }}
-  TF_ACTION: ${{ inputs.terraform_action }}
-
 jobs:
   terraform:
-    name: Run Terraform ${{ env.TF_ACTION }} on ${{ env.ENVIRONMENT }}
+    name: Run Terraform
     runs-on: ubuntu-latest
-    environment: ${{ env.ENVIRONMENT }}
+    environment: ${{ inputs.environment }}
     permissions:
       id-token: write
       contents: read
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      ENVIRONMENT: ${{ inputs.environment }}
+      TF_ACTION: ${{ inputs.terraform_action }}
     steps:
       - name: Checkout infrastructure repo
         uses: actions/checkout@v4
@@ -71,7 +70,7 @@ jobs:
         run: |
           terraform workspace select $ENVIRONMENT || terraform workspace new $ENVIRONMENT
 
-      - name: Terraform ${{ env.TF_ACTION | title }}
+      - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
             terraform plan -var="environment=$ENVIRONMENT"
