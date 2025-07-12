@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment'
-        required: true
+        description: 'environment'
+        required: false
         default: 'dev'
         type: choice
         options:
@@ -74,9 +74,9 @@ jobs:
           if [[ "$TF_ACTION" == "plan" ]]; then
             terraform -chdir=tf-source/tf-modules/services/fargate plan
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve -var-file="env/${ENVIRONMENT}.tfvars"
+            terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate destroy -auto-approve -var-file="env/${ENVIRONMENT}.tfvars"
+            terraform -chdir=tf-source/tf-modules/services/fargate destroy -auto-approve
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
