@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: 'environment'
         required: true
         default: 'dev'
         type: choice
@@ -12,7 +12,6 @@ on:
           - dev
           - uat
           - prod
-          - dr
       aws_region:
         description: 'AWS Region'
         required: true
@@ -33,7 +32,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform Workflow
+    name: Run Terraform
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
@@ -55,28 +54,27 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: tf-source
 
-      - name: Display Terraform Directory Structure
+      - name: List files in source repo
         run: ls -la tf-source/terraform/env/${ENVIRONMENT}
 
-      - name: Setup Terraform CLI
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.1.6
+          terraform_version: 1.6.6
 
-      - name: Configure AWS credentials via OIDC
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: |
-          terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -input=false
+        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -input=false
 
       - name: Terraform Format Check
         run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} fmt -check
 
-      - name: Terraform ${{ env.TF_ACTION | upper }}
+      - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars -input=false
@@ -87,3 +85,4 @@ jobs:
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
+          fi
