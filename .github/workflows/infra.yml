@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: 'environment'
         required: true
         default: 'dev'
         type: choice
         options:
           - dev
-          - uat
+          - stage
           - prod
       aws_region:
         description: 'AWS Region'
@@ -42,7 +42,6 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
       ENVIRONMENT: ${{ inputs.environment }}
       TF_ACTION: ${{ inputs.terraform_action }}
-
     steps:
       - name: Checkout infrastructure repo
         uses: actions/checkout@v4
@@ -55,7 +54,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: tf-source
 
-      - name: List files in environment
+      - name: List files in source repo
         run: ls -la tf-source/terraform/env/${ENVIRONMENT}
 
       - name: Setup Terraform
@@ -66,13 +65,13 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
         run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init
 
-      - name: Terraform Apply/Plan/Destroy
+      - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars
