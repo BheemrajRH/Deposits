@@ -70,7 +70,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=fargate/deposits-${ENVIRONMENT}.tfstate"
+        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/-${ENVIRONMENT}.tfstate"
 
       - name: Terraform Action
         run: |
