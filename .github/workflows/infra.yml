@@ -56,7 +56,7 @@ jobs:
           path: tf-source
 
       - name: List files in environment
-        run: ls -la tf-source/terraform/env/${ENVIRONMENT}/fargate
+        run: ls -la tf-source/terraform/env/${ENVIRONMENT}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -70,16 +70,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT}/fargate init
+        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init
 
       - name: Terraform Apply/Plan/Destroy
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT}/fargate plan -var-file=terraform.tfvars
+            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT}/fargate apply -auto-approve -var-file=terraform.tfvars
+            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} apply -auto-approve -var-file=${ENVIRONMENT}.tfvars
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT}/fargate destroy -auto-approve -var-file=terraform.tfvars
+            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} destroy -auto-approve -var-file=${ENVIRONMENT}.tfvars
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
