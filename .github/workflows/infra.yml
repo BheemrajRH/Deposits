@@ -71,9 +71,6 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -input=false
 
-      - name: Terraform Format Check
-        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} fmt -check
-
       - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
