@@ -10,7 +10,7 @@ on:
         type: choice
         options:
           - dev
-          - stage
+          - uat
           - prod
       aws_region:
         description: 'AWS Region'
