@@ -69,7 +69,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init
+        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=${ENVIRONMENT}.tfstate"
 
       - name: Terraform Action
         run: |
