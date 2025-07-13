@@ -53,7 +53,10 @@ jobs:
           ref: ${{ inputs.source_branch }}
           token: ${{ secrets.GH_PAT }}
           path: tf-source
-
+          
+      - name: List files in source repo
+        run: ls -la tf-source/terraform/env
+        
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
