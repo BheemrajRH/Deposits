@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'environment'
-        required: false
+        description: 'Environment'
+        required: true
         default: 'dev'
         type: choice
         options:
           - dev
-          - stage
+          - uat
           - prod
       aws_region:
         description: 'AWS Region'
@@ -54,9 +54,6 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: tf-source
 
-      - name: List files in source repo
-        run: ls -la tf-source/tf-modules/services/fargate
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -69,16 +66,17 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=tf-source/tf-modules/services/fargate init
+        run: terraform -chdir=tf-source/env/${{ inputs.environment }}/fargate init
 
       - name: Terraform Action
         run: |
+          TFVARS_FILE="${{ inputs.environment }}.tfvars"
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate plan
+            terraform -chdir=tf-source/env/${{ inputs.environment }}/fargate plan -var-file="$TFVARS_FILE"
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate apply -auto-approve
+            terraform -chdir=tf-source/env/${{ inputs.environment }}/fargate apply -auto-approve -var-file="$TFVARS_FILE"
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform -chdir=tf-source/tf-modules/services/fargate destroy -auto-approve
+            terraform -chdir=tf-source/env/${{ inputs.environment }}/fargate destroy -auto-approve -var-file="$TFVARS_FILE"
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
