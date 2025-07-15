@@ -69,11 +69,14 @@ jobs:
       - name: Set AWS Role to Assume
         id: set-role
         run: |
-          if [[ "${ENVIRONMENT}" == "prod" ]]; then
-            echo "role_arn=${{ secrets.AWS_ROLE_ROLE_PROD }}" >> $GITHUB_OUTPUT
+          if [[ "$ENVIRONMENT" == "prod" ]]; then
+            echo "role_arn=${AWS_ROLE_ROLE_PROD}" >> $GITHUB_OUTPUT
           else
-            echo "role_arn=${{ secrets.AWS_ROLE_ROLE }}" >> $GITHUB_OUTPUT
+            echo "role_arn=${AWS_ROLE_ROLE}" >> $GITHUB_OUTPUT
           fi
+        env:
+          AWS_ROLE_ROLE_PROD: ${{ secrets.AWS_ROLE_ROLE_PROD }}
+          AWS_ROLE_ROLE: ${{ secrets.AWS_ROLE_ROLE }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
