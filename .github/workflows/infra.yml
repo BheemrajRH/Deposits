@@ -72,9 +72,9 @@ jobs:
         run: |
           echo "Evaluating role to assume for environment: $ENVIRONMENT"
           if [ "$ENVIRONMENT" = "prod" ]; then
-            echo "role_arn=$AWS_ROLE_ROLE_PROD" >> "$GITHUB_OUTPUT"
+            echo "role_arn=${AWS_ROLE_ROLE_PROD}" >> "$GITHUB_OUTPUT"
           else
-            echo "role_arn=$AWS_ROLE_ROLE" >> "$GITHUB_OUTPUT"
+            echo "role_arn=${AWS_ROLE_ROLE}" >> "$GITHUB_OUTPUT"
           fi
         env:
           AWS_ROLE_ROLE_PROD: ${{ secrets.AWS_ROLE_ROLE_PROD }}
@@ -90,6 +90,7 @@ jobs:
         run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -var="region=${AWS_REGION}" -input=false
 
       - name: Terraform Action
+        shell: bash
         run: |
           if [ "$TF_ACTION" = "plan" ]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
