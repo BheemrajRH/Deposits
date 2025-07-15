@@ -68,11 +68,13 @@ jobs:
 
       - name: Set AWS Role to Assume
         id: set-role
+        shell: bash
         run: |
+          echo "Evaluating role to assume for environment: $ENVIRONMENT"
           if [ "$ENVIRONMENT" = "prod" ]; then
-            echo "role_arn=${AWS_ROLE_ROLE_PROD}" >> "$GITHUB_OUTPUT"
+            echo "role_arn=$AWS_ROLE_ROLE_PROD" >> "$GITHUB_OUTPUT"
           else
-            echo "role_arn=${AWS_ROLE_ROLE}" >> "$GITHUB_OUTPUT"
+            echo "role_arn=$AWS_ROLE_ROLE" >> "$GITHUB_OUTPUT"
           fi
         env:
           AWS_ROLE_ROLE_PROD: ${{ secrets.AWS_ROLE_ROLE_PROD }}
