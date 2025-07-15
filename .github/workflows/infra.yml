@@ -69,10 +69,10 @@ jobs:
       - name: Set AWS Role to Assume
         id: set-role
         run: |
-          if [[ "$ENVIRONMENT" == "prod" ]]; then
-            echo "role_arn=${AWS_ROLE_ROLE_PROD}" >> $GITHUB_OUTPUT
+          if [ "$ENVIRONMENT" = "prod" ]; then
+            echo "role_arn=${AWS_ROLE_ROLE_PROD}" >> "$GITHUB_OUTPUT"
           else
-            echo "role_arn=${AWS_ROLE_ROLE}" >> $GITHUB_OUTPUT
+            echo "role_arn=${AWS_ROLE_ROLE}" >> "$GITHUB_OUTPUT"
           fi
         env:
           AWS_ROLE_ROLE_PROD: ${{ secrets.AWS_ROLE_ROLE_PROD }}
@@ -89,11 +89,11 @@ jobs:
 
       - name: Terraform Action
         run: |
-          if [[ "$TF_ACTION" == "plan" ]]; then
+          if [ "$TF_ACTION" = "plan" ]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
-          elif [[ "$TF_ACTION" == "apply" ]]; then
+          elif [ "$TF_ACTION" = "apply" ]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} apply -auto-approve -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
-          elif [[ "$TF_ACTION" == "destroy" ]]; then
+          elif [ "$TF_ACTION" = "destroy" ]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} destroy -auto-approve -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
           else
             echo "Unsupported action: $TF_ACTION"
