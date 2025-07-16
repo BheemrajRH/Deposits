@@ -1,10 +1,10 @@
-name: manage infra
+name: Terraform CI/CD
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: 'environment'
         required: true
         default: 'dev'
         type: choice
@@ -16,10 +16,6 @@ on:
         description: 'AWS Region'
         required: true
         default: 'us-east-1'
-        type: choice
-        options:
-          - us-east-1
-          - us-east-2
       terraform_action:
         description: 'Terraform action to perform'
         required: true
@@ -73,16 +69,17 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -var="region=${AWS_REGION}" -input=false
+        run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -input=false
 
       - name: Terraform Action
         run: |
           if [[ "$TF_ACTION" == "plan" ]]; then
-            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
+            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars -input=false
           elif [[ "$TF_ACTION" == "apply" ]]; then
-            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} apply -auto-approve -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
+            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} apply -auto-approve -var-file=${ENVIRONMENT}.tfvars -input=false
           elif [[ "$TF_ACTION" == "destroy" ]]; then
-            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} destroy -auto-approve -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
+            terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} destroy -auto-approve -var-file=${ENVIRONMENT}.tfvars -input=false
           else
             echo "Unsupported action: $TF_ACTION"
             exit 1
+          fi
