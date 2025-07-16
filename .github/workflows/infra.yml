@@ -66,37 +66,22 @@ jobs:
         with:
           terraform_version: 1.6.6
 
-      - name: Set AWS Role to Assume
-        id: set-role
-        shell: bash
-        run: |
-          echo "Evaluating role to assume for environment: $ENVIRONMENT"
-          if [ "$ENVIRONMENT" = "prod" ]; then
-            echo "role_arn=$AWS_ROLE_ROLE_PROD" >> "$GITHUB_OUTPUT"
-          else
-            echo "role_arn=$AWS_ROLE_ROLE" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          AWS_ROLE_ROLE_PROD: ${{ secrets.AWS_ROLE_ROLE_PROD }}
-          AWS_ROLE_ROLE: ${{ secrets.AWS_ROLE_ROLE }}
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ steps.set-role.outputs.role_arn }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
         run: terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} init -backend-config="key=deposits/${ENVIRONMENT}.tfstate" -var="region=${AWS_REGION}" -input=false
 
       - name: Terraform Action
-        shell: bash
         run: |
-          if [ "$TF_ACTION" = "plan" ]; then
+          if [[ "$TF_ACTION" == "plan" ]]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} plan -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
-          elif [ "$TF_ACTION" = "apply" ]; then
+          elif [[ "$TF_ACTION" == "apply" ]]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} apply -auto-approve -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
-          elif [ "$TF_ACTION" = "destroy" ]; then
+          elif [[ "$TF_ACTION" == "destroy" ]]; then
             terraform -chdir=tf-source/terraform/env/${ENVIRONMENT} destroy -auto-approve -var-file=${ENVIRONMENT}.tfvars -var="region=${AWS_REGION}" -input=false
           else
             echo "Unsupported action: $TF_ACTION"
