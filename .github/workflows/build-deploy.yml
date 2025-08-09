@@ -1,17 +1,14 @@
 name: Deposists-Build-Deploy
 
 on:
-  push:
-    branches:
-      - main
-
+  workflow_dispatch:
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: dotnet-fargate-app
-  ECS_CLUSTER: dotnet-cluster
-  ECS_SERVICE: dotnet-service
-  ECS_TASK_DEFINITION: .aws/task-def.json
-  CONTAINER_NAME: dotnet-app
+  ECR_REPOSITORY: demo-ecr-repo
+  ECS_CLUSTER: dev-cluster
+  ECS_SERVICE: dev-service
+  ECS_TASK_DEFINITION: dev-task
+  CONTAINER_NAME: dev-container
 
 jobs:
   build:
