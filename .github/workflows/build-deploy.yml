@@ -43,10 +43,11 @@ jobs:
       - name: Push Docker image
         run: docker push $IMAGE_URI
 
-      - name: Update ECS Task Definition with new image
+      - name: Deploy to Amazon ECS
         run: |
+          echo "Updating ECS service with new image..."
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition $NEW_TASK_DEF_ARN \
-            --force-new-deployment
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
