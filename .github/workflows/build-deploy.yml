@@ -3,11 +3,11 @@ name: Deposists-Build-Deploy
 on:
   workflow_dispatch: # Manual trigger
 env:
-  AWS_REGION: ap-east-1
-  ECR_REPOSITORY: my-dotnet-app
-  ECS_CLUSTER: my-cluster
-  ECS_SERVICE: my-service
-  CONTAINER_NAME: my-dotnet-container
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: demo-ecr-repo
+  ECS_CLUSTER: dev-cluster
+  ECS_SERVICE: dev-service
+  CONTAINER_NAME: dev-container
 
 jobs:
   deploy:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
