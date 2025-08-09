@@ -2,6 +2,7 @@ name: Deposists-Build-Deploy
 
 on:
   workflow_dispatch: # Manual trigger
+
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: demo-ecr-repo
@@ -15,7 +16,7 @@ jobs:
 
     permissions:
       contents: read
-      id-token: write  # Needed for OIDC auth
+      id-token: write # Needed for OIDC auth
 
     steps:
       - name: Checkout code
@@ -27,27 +28,64 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
+      - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build .NET project
-        run: |
-          dotnet restore
-          dotnet publish -c Release -o publish
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.ECR_REPOSITORY }}:latest ./publish
-          docker tag ${{ env.ECR_REPOSITORY }}:latest ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+      - name: Restore
+        run: dotnet restore
 
-      - name: Push image to Amazon ECR
-        run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Update ECS Service with new image
+      - name: Publish
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Build & Tag Docker image
         run: |
+          IMAGE_TAG=${GITHUB_SHA}
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker build -t $IMAGE_URI -f Dockerfile .
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Push Docker image
+        run: docker push $IMAGE_URI
+
+      - name: Update ECS Task Definition with new image
+        run: |
+          # Get the current task definition JSON
+          TASK_DEF=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query "services[0].taskDefinition" \
+            --output text)
+
+          # Download the current task definition as JSON
+          aws ecs describe-task-definition \
+            --task-definition $TASK_DEF \
+            --query "taskDefinition" \
+            > task-def.json
+
+          # Create new task definition JSON with updated image
+          NEW_TASK_DEF=$(jq --arg IMAGE "$IMAGE_URI" \
+            '.containerDefinitions[0].image = $IMAGE' task-def.json)
+
+          # Register new task definition revision
+          echo "$NEW_TASK_DEF" > new-task-def.json
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+
+          # Update the ECS service to use the new task definition revision
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
+            --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment
