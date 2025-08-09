@@ -1,14 +1,20 @@
 name: Deposists-Build-Deploy
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select environment to deploy"
+        required: true
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
 
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: demo-ecr-repo
-  ECS_CLUSTER: dev-cluster
-  ECS_SERVICE: dev-service
-  CONTAINER_NAME: dev-container
 
 jobs:
   deploy:
@@ -19,13 +25,32 @@ jobs:
       id-token: write # Needed for OIDC auth
 
     steps:
+      - name: Set environment-specific variables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
+            echo "ECS_CLUSTER=dev-cluster" >> $GITHUB_ENV
+            echo "ECS_SERVICE=dev-service" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=dev-container" >> $GITHUB_ENV
+            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN}}" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" == "uat" ]; then
+            echo "ECS_CLUSTER=uat-cluster" >> $GITHUB_ENV
+            echo "ECS_SERVICE=uat-service" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=uat-container" >> $GITHUB_ENV
+            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
+            echo "ECS_CLUSTER=prod-cluster" >> $GITHUB_ENV
+            echo "ECS_SERVICE=prod-service" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=prod-container" >> $GITHUB_ENV
+            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}" >> $GITHUB_ENV
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -45,7 +70,7 @@ jobs:
 
       - name: Deploy to Amazon ECS
         run: |
-          echo "Updating ECS service with new image..."
+          echo "Updating ECS service in ${{ github.event.inputs.environment }}..."
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
