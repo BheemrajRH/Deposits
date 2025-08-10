@@ -43,10 +43,10 @@ jobs:
       ENVIRONMENT: ${{ inputs.environment }}
       TF_ACTION: ${{ inputs.terraform_action }}
     steps:
-      - name: Checkout infrastructure repo
+      - name: Checkout deposists repo
         uses: actions/checkout@v4
 
-      - name: Checkout source repo
+      - name: Checkout Operationautomation repo
         uses: actions/checkout@v4
         with:
           repository: BheemrajRH/Operationautomation
