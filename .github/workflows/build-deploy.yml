@@ -1,4 +1,4 @@
-name: Deposists-Build-Deploy
+name: deposists-Build-Deploy
 
 on:
   workflow_dispatch:
