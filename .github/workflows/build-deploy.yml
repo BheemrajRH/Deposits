@@ -14,7 +14,6 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: deposists-ecr
 
 jobs:
   deploy:
@@ -31,17 +30,20 @@ jobs:
             echo "ECS_CLUSTER=deposists-cluster" >> $GITHUB_ENV
             echo "ECS_SERVICE=deposists-dev-service" >> $GITHUB_ENV
             echo "CONTAINER_NAME=deposists-dev-container" >> $GITHUB_ENV
-            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN}}" >> $GITHUB_ENV
+            echo "ECR_REPOSITORY=deposists-dev-ecr" >> $GITHUB_ENV
+            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN_DEV }}" >> $GITHUB_ENV
           elif [ "${{ github.event.inputs.environment }}" == "uat" ]; then
             echo "ECS_CLUSTER=deposists-cluster" >> $GITHUB_ENV
             echo "ECS_SERVICE=deposists-uat-service" >> $GITHUB_ENV
             echo "CONTAINER_NAME=deposists-uat-container" >> $GITHUB_ENV
-            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "ECR_REPOSITORY=deposists-uat-ecr" >> $GITHUB_ENV
+            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN_UAT }}" >> $GITHUB_ENV
           elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
             echo "ECS_CLUSTER=deposists-cluster" >> $GITHUB_ENV
             echo "ECS_SERVICE=deposists-prod-service" >> $GITHUB_ENV
             echo "CONTAINER_NAME=deposists-prod-container" >> $GITHUB_ENV
-            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "ECR_REPOSITORY=deposists-prod-ecr" >> $GITHUB_ENV
+            echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_ENV
           fi
 
       - name: Checkout code
