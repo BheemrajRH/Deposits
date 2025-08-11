@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Select environment to deploy"
+        description: "environment"
         required: true
         type: choice
         options:
@@ -14,7 +14,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: demo-ecr-repo
+  ECR_REPOSITORY: deposists-ecr
 
 jobs:
   deploy:
@@ -28,19 +28,19 @@ jobs:
       - name: Set environment-specific variables
         run: |
           if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
-            echo "ECS_CLUSTER=dev-cluster" >> $GITHUB_ENV
-            echo "ECS_SERVICE=dev-service" >> $GITHUB_ENV
-            echo "CONTAINER_NAME=dev-container" >> $GITHUB_ENV
+            echo "ECS_CLUSTER=deposists-cluster" >> $GITHUB_ENV
+            echo "ECS_SERVICE=deposists-dev-service" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=deposists-dev-container" >> $GITHUB_ENV
             echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN}}" >> $GITHUB_ENV
           elif [ "${{ github.event.inputs.environment }}" == "uat" ]; then
-            echo "ECS_CLUSTER=uat-cluster" >> $GITHUB_ENV
-            echo "ECS_SERVICE=uat-service" >> $GITHUB_ENV
-            echo "CONTAINER_NAME=uat-container" >> $GITHUB_ENV
+            echo "ECS_CLUSTER=deposists-cluster" >> $GITHUB_ENV
+            echo "ECS_SERVICE=deposists-uat-service" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=deposists-uat-container" >> $GITHUB_ENV
             echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}" >> $GITHUB_ENV
           elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
-            echo "ECS_CLUSTER=prod-cluster" >> $GITHUB_ENV
-            echo "ECS_SERVICE=prod-service" >> $GITHUB_ENV
-            echo "CONTAINER_NAME=prod-container" >> $GITHUB_ENV
+            echo "ECS_CLUSTER=deposists-cluster" >> $GITHUB_ENV
+            echo "ECS_SERVICE=deposists-prod-service" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=deposists-prod-container" >> $GITHUB_ENV
             echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}" >> $GITHUB_ENV
           fi
 
