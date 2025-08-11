@@ -28,7 +28,7 @@ on:
       source_branch:
         description: 'Branch of the source repo to checkout'
         required: true
-        default: 'mainv1'
+        default: 'main'
 
 jobs:
   terraform:
